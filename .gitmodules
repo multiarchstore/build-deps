@@ -8,7 +8,7 @@
 	branch = master
 [submodule "third-party/FFmpeg/x265_git"]
 	path = third-party/FFmpeg/x265_git
-	url = https://github.com/LizardByte-infrastructure/x265_git.git
+	url = https://github.com/multiarchstore/x265_git.git
 	branch = stable
 [submodule "third-party/FFmpeg/nv-codec-headers"]
 	path = third-party/FFmpeg/nv-codec-headers
