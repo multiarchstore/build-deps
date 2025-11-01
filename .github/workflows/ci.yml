@@ -34,78 +34,85 @@ jobs:
       matrix:
         include:
           # name: ${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}
-          - name: Linux-x86_64
-            os: ubuntu-22.04
-            arch: x86_64
+          # - name: Linux-x86_64
+          #   os: ubuntu-22.04
+          #   arch: x86_64
+          #   generator: "Unix Makefiles"
+          #   shell: bash
+          #   build: ALL
+          # - name: Linux-aarch64
+          #   os: ubuntu-22.04
+          #   arch: aarch64
+          #   generator: "Unix Makefiles"
+          #   shell: bash
+          #   target: aarch64-linux-gnu
+          #   build: ALL
+          # - name: Linux-ppc64le
+          #   os: ubuntu-22.04
+          #   arch: powerpc64le
+          #   generator: "Unix Makefiles"
+          #   shell: bash
+          #   target: powerpc64le-linux-gnu
+          #   build: ALL
+          - name: Linux-loongarch64
+            os: ubuntu-24.04
+            arch: loongarch64
             generator: "Unix Makefiles"
             shell: bash
+            target: loongarch64-linux-gnu
             build: ALL
-          - name: Linux-aarch64
-            os: ubuntu-22.04
-            arch: aarch64
-            generator: "Unix Makefiles"
-            shell: bash
-            target: aarch64-linux-gnu
-            build: ALL
-          - name: Linux-ppc64le
-            os: ubuntu-22.04
-            arch: powerpc64le
-            generator: "Unix Makefiles"
-            shell: bash
-            target: powerpc64le-linux-gnu
-            build: ALL
-          - name: Darwin-x86_64
-            os: macos-13
-            arch: x86_64
-            generator: "Unix Makefiles"
-            shell: bash
-            target: x86_64-apple-macosx
-            build: ALL
-          - name: Darwin-arm64
-            os: macos-14
-            arch: aarch64
-            generator: "Unix Makefiles"
-            shell: bash
-            target: arm64-apple-macosx
-            build: ALL
-          - name: Windows-AMD64
-            os: windows-2022
-            arch: x86_64
-            generator: "MSYS Makefiles"
-            shell: msys2 {0}
-            msystem: ucrt64
-            toolchain: ucrt-x86_64
-            build: BOOST
-          - name: Windows-AMD64
-            os: windows-2022
-            arch: x86_64
-            generator: "MSYS Makefiles"
-            shell: msys2 {0}
-            msystem: ucrt64
-            toolchain: ucrt-x86_64
-            build: FFMPEG
-          - name: Windows-ARM64
-            os: windows-11-arm
-            arch: aarch64
-            generator: "MSYS Makefiles"
-            shell: msys2 {0}
-            msystem: clangarm64
-            toolchain: clang-aarch64
-            build: ALL
-          - name: FreeBSD-amd64
-            os: ubuntu-latest
-            arch: x86_64
-            bsd_release: '14.3'
-            generator: "Unix Makefiles"
-            shell: freebsd {0}
-            build: ALL
-          - name: FreeBSD-aarch64
-            os: ubuntu-latest  # ubuntu-24.04-arm is slower with the FreeBSD VM
-            arch: aarch64
-            bsd_release: '14.3'
-            generator: "Unix Makefiles"
-            shell: freebsd {0}
-            build: ALL
+          # - name: Darwin-x86_64
+          #   os: macos-13
+          #   arch: x86_64
+          #   generator: "Unix Makefiles"
+          #   shell: bash
+          #   target: x86_64-apple-macosx
+          #   build: ALL
+          # - name: Darwin-arm64
+          #   os: macos-14
+          #   arch: aarch64
+          #   generator: "Unix Makefiles"
+          #   shell: bash
+          #   target: arm64-apple-macosx
+          #   build: ALL
+          # - name: Windows-AMD64
+          #   os: windows-2022
+          #   arch: x86_64
+          #   generator: "MSYS Makefiles"
+          #   shell: msys2 {0}
+          #   msystem: ucrt64
+          #   toolchain: ucrt-x86_64
+          #   build: BOOST
+          # - name: Windows-AMD64
+          #   os: windows-2022
+          #   arch: x86_64
+          #   generator: "MSYS Makefiles"
+          #   shell: msys2 {0}
+          #   msystem: ucrt64
+          #   toolchain: ucrt-x86_64
+          #   build: FFMPEG
+          # - name: Windows-ARM64
+          #   os: windows-11-arm
+          #   arch: aarch64
+          #   generator: "MSYS Makefiles"
+          #   shell: msys2 {0}
+          #   msystem: clangarm64
+          #   toolchain: clang-aarch64
+          #   build: ALL
+          # - name: FreeBSD-amd64
+          #   os: ubuntu-latest
+          #   arch: x86_64
+          #   bsd_release: '14.3'
+          #   generator: "Unix Makefiles"
+          #   shell: freebsd {0}
+          #   build: ALL
+          # - name: FreeBSD-aarch64
+          #   os: ubuntu-latest  # ubuntu-24.04-arm is slower with the FreeBSD VM
+          #   arch: aarch64
+          #   bsd_release: '14.3'
+          #   generator: "Unix Makefiles"
+          #   shell: freebsd {0}
+          #   build: ALL
     defaults:
       run:
         shell: ${{ matrix.shell }}
@@ -185,6 +192,11 @@ jobs:
             dependencies+=("g++-${LINUX_GCC_VERSION}-powerpc64le-linux-gnu")
             cross_compile=true
             package_arch="ppc64el"
+          elif [[ ${{ matrix.arch }} == "loongarch64" ]]; then
+            dependencies+=("gcc-${LINUX_GCC_VERSION}-loongarch64-linux-gnu")
+            dependencies+=("g++-${LINUX_GCC_VERSION}-loongarch64-linux-gnu")
+            cross_compile=true
+            package_arch="loong64"
           else
             dependencies+=("gcc-${LINUX_GCC_VERSION}")
             dependencies+=("g++-${LINUX_GCC_VERSION}")
@@ -201,6 +213,7 @@ jobs:
 
           echo "::group::apt sources"
           mirror="https://ports.ubuntu.com/ubuntu-ports"
+          debian_mirror="http://ftp.ports.debian.org/debian-ports"
 
           # source file changed in 24.04
           if [[ $ubuntu_major_version -ge 24 ]]; then
@@ -236,6 +249,25 @@ jobs:
           deb [arch=${package_arch}] ${mirror} ${dist_name}-security multiverse
           VAREOF
           )
+          fi
+
+          # If it is loongarch64, use debian instead
+          if [[ ${package_arch} == "loong64" ]]; then
+            if [[ $ubuntu_major_version -ge 24 ]]; then
+              source_file="/etc/apt/sources.list.d/debian-ports.sources"
+              extra_sources=$(cat <<- VAREOF
+            Types: deb
+            URIs: ${debian_mirror}
+            Suites: sid
+            Components: main contrib non-free non-free-firmware
+            Signed-By:
+            Trusted: yes
+            VAREOF
+            )
+            else
+              source_file="/etc/apt/sources.list.d/debian-ports.list"
+              extra_sources="deb [trusted=yes] ${debian_mirror} sid main contrib non-free non-free-firmware"
+            fi
           fi
 
           if [[ ${cross_compile} == true ]]; then
