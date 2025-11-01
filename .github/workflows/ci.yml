@@ -256,14 +256,14 @@ jobs:
             if [[ $ubuntu_major_version -ge 24 ]]; then
               source_file="/etc/apt/sources.list.d/debian-ports.sources"
               extra_sources=$(cat <<- VAREOF
-            Types: deb
-            URIs: ${debian_mirror}
-            Suites: sid
-            Components: main contrib non-free non-free-firmware
-            Signed-By:
-            Trusted: yes
-            VAREOF
-            )
+          Types: deb
+          URIs: ${debian_mirror}
+          Suites: sid
+          Components: main contrib non-free non-free-firmware
+          Signed-By:
+          Trusted: yes
+          VAREOF
+          )
             else
               source_file="/etc/apt/sources.list.d/debian-ports.list"
               extra_sources="deb [trusted=yes] ${debian_mirror} sid main contrib non-free non-free-firmware"
