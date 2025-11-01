@@ -273,7 +273,7 @@ jobs:
           if [[ ${cross_compile} == true ]]; then
             # print original sources
             echo "original sources:"
-            sudo cat ${source_file}
+            sudo cat ${source_file} || true
             echo "----"
 
             sudo dpkg --add-architecture ${package_arch}
