@@ -195,6 +195,7 @@ jobs:
           elif [[ ${{ matrix.arch }} == "loongarch64" ]]; then
             dependencies+=("gcc-${LINUX_GCC_VERSION}-loongarch64-linux-gnu")
             dependencies+=("g++-${LINUX_GCC_VERSION}-loongarch64-linux-gnu")
+            dependencies+=("libc6:loong64")
             cross_compile=true
             package_arch="loong64"
           else
